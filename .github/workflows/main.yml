@@ -1,0 +1,32 @@
+name: Publish
+
+on:
+  create:
+    tags:
+      - v*
+
+jobs:
+  publish_image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Import Secrets
+        uses: hashicorp/vault-action@v2.0.1
+        with:
+          url: ${{ secrets.VAULT_ADDR }}
+          method: approle
+          roleId: ${{ secrets.VAULT_ROLE_ID }}
+          secretId: ${{ secrets.VAULT_SECRET_ID }}
+          secrets: |
+              secrets/services/ghcr user | DOCKER_USERNAME ;
+              secrets/services/ghcr password | DOCKER_PASSWORD
+
+      - name: Publish to Docker Repository
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: ghcr.io/clayman-micro/action-deploy
+          username: ${{ steps.secrets.outputs.DOCKER_USERNAME }}
+          password: ${{ steps.secrets.outputs.DOCKER_PASSWORD }}
+          registry: ghcr.io
+          tag_names: true
