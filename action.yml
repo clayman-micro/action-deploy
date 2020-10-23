@@ -1,0 +1,11 @@
+name: 'Deploy'
+description: 'Deploy microservice with Ansible'
+inputs:
+  params:
+    description: 'ansible command params'
+    required: true
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.params }}
